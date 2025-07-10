@@ -1,0 +1,13 @@
+<div class="container">
+    <h2>股票查詢</h2>
+    <input [(ngModel)]="stockNo" placeholder="輸入股票代碼（如 2330）" />
+    <button (click)="getPrice()">查詢</button>
+  
+    <div *ngIf="result">
+      <h3>查詢結果：</h3>
+      <pre>{{ result | json }}</pre>
+    </div>
+  
+    <p class="error" *ngIf="error">{{ error }}</p>
+  </div>
+  
