@@ -29,6 +29,12 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
+      - name: 🧰 Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+
       - name: 🧹 Clear old files in S3
         run: aws s3 rm s3://${{ secrets.AWS_S3_BUCKET }} --recursive
         env:
