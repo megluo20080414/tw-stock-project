@@ -1,4 +1,4 @@
-name: Deploy Angular Frontend to S3
+name: Frontend Deploy to S3
 
 on:
   push:
@@ -6,9 +6,10 @@ on:
       - main
     paths:
       - "frontend/**"
+  workflow_dispatch: # ✅ 支援手動觸發
 
 jobs:
-  deploy-frontend:
+  build-and-deploy-frontend:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,16 +23,17 @@ jobs:
 
       - name: 📦 Install dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: npm install
 
-      - name: 🏗 Build Angular frontend
+      - name: 🏗 Build Angular app
         working-directory: ./frontend
-        run: npm run build
+        run: npm run build -- --configuration production
 
-      - name: ☁️ Upload to S3
+      - name: ☁️ Deploy to S3
         uses: aws-actions/aws-cli-action@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-          command: s3 sync ./frontend/dist/stock-ui/browser s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          script: |
+            aws s3 sync frontend/dist/stock-ui/browser s3://${{ secrets.AWS_S3_BUCKET }} --delete
