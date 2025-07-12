@@ -1,13 +1,43 @@
 <div class="container">
-    <h2>股票查詢</h2>
+  <h2>股票查詢</h2>
+
+  <div class="input-group">
     <input [(ngModel)]="stockNo" placeholder="輸入股票代碼（如 2330）" />
+
+    <label>查詢年月：</label>
+    <input type="month" [(ngModel)]="yearMonth" />
+
     <button (click)="getPrice()">查詢</button>
-  
-    <div *ngIf="result">
-      <h3>查詢結果：</h3>
-      <pre>{{ result | json }}</pre>
-    </div>
-  
-    <p class="error" *ngIf="error">{{ error }}</p>
   </div>
-  
+
+  <!-- 🧾 JSON 顯示 -->
+  <div *ngIf="result">
+    <h3>JSON 原始資料：</h3>
+    <pre>{{ result | json }}</pre>
+  </div>
+
+  <!-- 📊 表格顯示 -->
+  <div *ngIf="result?.data?.length > 0">
+    <h3>表格顯示：</h3>
+    <table class="price-table">
+      <thead>
+        <tr>
+          <th *ngFor="let header of result.fields">{{ header }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of result.data">
+          <td *ngFor="let cell of row">{{ cell }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ⚠️ 查無資料 -->
+  <div *ngIf="result?.data?.length === 0">
+    <p class="error">⚠️ 沒有資料</p>
+  </div>
+
+  <!-- ❌ 錯誤訊息 -->
+  <p class="error" *ngIf="error">{{ error }}</p>
+</div>

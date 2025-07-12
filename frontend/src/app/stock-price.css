@@ -1,18 +1,70 @@
 .container {
-    max-width: 500px;
-    margin: 2rem auto;
-    text-align: center;
-  }
-  input {
-    padding: 8px;
-    width: 200px;
-    margin-right: 10px;
-  }
-  button {
-    padding: 8px 16px;
-  }
-  .error {
-    color: red;
-    margin-top: 1rem;
-  }
-  
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fafafa;
+}
+
+.input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+input[type="text"],
+input[type="date"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: white;
+}
+
+.price-table th,
+.price-table td {
+  border: 1px solid #ddd;
+  padding: 0.6rem;
+  text-align: center;
+}
+
+.price-table th {
+  background-color: #f2f2f2;
+}
+
+pre {
+  background-color: #f6f6f6;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  overflow-x: auto;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+  margin-top: 1rem;
+}
