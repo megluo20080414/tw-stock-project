@@ -1,34 +1,42 @@
-name: Deploy to AWS EC2 and S3
+name: CI/CD Deploy to AWS
 
 on:
   push:
     branches:
-      - main # 你實際的分支名稱
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: ⬇️ Checkout repository
         uses: actions/checkout@v3
 
-      # ✅ 設定 Node.js 用於 build frontend
-      - name: Set up Node.js
+      - name: ⚙️ Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: 🛠 Build backend with Maven
+        working-directory: ./backend
+        run: ./mvnw clean package -DskipTests
+
+      - name: ⚙️ Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "22.12.0" # ✅ 更新成 Angular 要求的版本
 
-      - name: Install frontend dependencies
+      - name: 📦 Install frontend dependencies
         working-directory: ./frontend
         run: npm install
 
-      - name: Build frontend
+      - name: 🏗 Build frontend
         working-directory: ./frontend
         run: npm run build -- --configuration production
 
-      # ✅ 將 frontend 部署到 S3
-      - name: Deploy frontend to S3
+      - name: ☁️ Upload frontend to S3
         uses: jakejarvis/s3-sync-action@master
         with:
           args: --delete
@@ -36,30 +44,24 @@ jobs:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1" # 根據你實際設定
-          SOURCE_DIR: ./frontend/dist/stock-ui
+          AWS_REGION: ap-northeast-1
+          SOURCE_DIR: ./frontend/dist/frontend
 
-      # ✅ build backend
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - name: 🚀 Deploy backend to EC2
+        uses: appleboy/scp-action@master
         with:
-          java-version: "17"
-          distribution: "temurin"
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "backend/target/demo-0.0.1-SNAPSHOT.jar"
+          target: "/home/ubuntu"
 
-      - name: Build backend
-        working-directory: ./backend
-        run: ./mvnw clean package -DskipTests
-
-      # ✅ 傳送 backend JAR 到 EC2 並啟動
-      - name: Set up SSH Agent
-        uses: webfactory/ssh-agent@v0.5.4
+      - name: 🔄 Restart backend on EC2
+        uses: appleboy/ssh-action@master
         with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
-      - name: Deploy backend to EC2
-        run: |
-          scp -o StrictHostKeyChecking=no ./backend/target/demo-0.0.1-SNAPSHOT.jar ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
             pkill -f 'java -jar' || true
-            nohup java -jar /home/ubuntu/demo-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-          EOF
+            nohup java -jar /home/ubuntu/demo-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
