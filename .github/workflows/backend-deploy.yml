@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "backend/**"
-  workflow_dispatch: # ✅ 加上手動觸發
+  workflow_dispatch:
 
 jobs:
   build-and-deploy-backend:
@@ -48,6 +48,8 @@ jobs:
             echo "📦 檢查 JAR 是否存在"
             ls -l /home/ubuntu/demo-0.0.1-SNAPSHOT.jar
 
-            echo "🚀 啟動新的 Spring Boot 應用"
+            echo "🚀 啟動 Spring Boot（背景執行）"
             nohup java -jar /home/ubuntu/demo-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-            echo "✅ 已背景執行"
+
+            echo "⏳ 等待 5 秒確保成功啟動..."
+            sleep 5
