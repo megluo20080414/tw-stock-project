@@ -29,7 +29,7 @@ jobs:
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu # ✅ 改這裡
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "backend/target/demo-0.0.1-SNAPSHOT.jar"
           target: "/home/ubuntu"
@@ -38,7 +38,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu # ✅ 改這裡
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             pkill -f 'java -jar' || true
