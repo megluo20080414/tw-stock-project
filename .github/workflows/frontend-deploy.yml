@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "frontend/**"
-  workflow_dispatch: # ✅ 手動觸發支援
+  workflow_dispatch:
 
 jobs:
   build-and-deploy-frontend:
@@ -29,6 +29,14 @@ jobs:
         working-directory: ./frontend
         run: npm run build -- --configuration production
 
+      - name: 🧹 Clear old files in S3
+        run: |
+          aws s3 rm s3://${{ secrets.AWS_S3_BUCKET }} --recursive
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-1
+
       - name: ☁️ Upload to S3
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -39,3 +47,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-1
           SOURCE_DIR: ./frontend/dist/stock-ui/browser
+
+      - name: 🚀 Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-1
