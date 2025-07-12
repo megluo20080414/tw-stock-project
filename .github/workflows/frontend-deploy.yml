@@ -1,4 +1,4 @@
-name: Frontend Deploy to S3
+name: Build and Deploy Frontend to S3
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "frontend/**"
-  workflow_dispatch:
 
 jobs:
   build-and-deploy-frontend:
@@ -16,7 +15,7 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v3
 
-      - name: ⚙️ Set up Node.js
+      - name: 🌟 Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "20"
@@ -27,10 +26,13 @@ jobs:
 
       - name: 🏗 Build Angular app
         working-directory: ./frontend
-        run: npm run build -- --configuration production
+        run: npm run build
 
       - name: 🧹 Clear old files in S3
         run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
           aws s3 rm s3://${{ secrets.AWS_S3_BUCKET }} --recursive
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -47,13 +49,3 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-1
           SOURCE_DIR: ./frontend/dist/stock-ui/browser
-
-      - name: 🚀 Invalidate CloudFront Cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ap-northeast-1
