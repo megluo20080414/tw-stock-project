@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "backend/**"
+  workflow_dispatch: # ✅ 加上這行可以手動觸發
 
 jobs:
   build-and-deploy-backend:
