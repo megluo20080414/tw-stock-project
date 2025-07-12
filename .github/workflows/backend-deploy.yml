@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "backend/**"
-  workflow_dispatch: # ✅ 加這行才能手動執行
+  workflow_dispatch: # ✅ 加上手動觸發
 
 jobs:
   build-and-deploy-backend:
@@ -42,5 +42,12 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            echo "✅ 殺掉正在執行的 Spring Boot..."
             pkill -f 'java -jar' || true
-            nohup java -jar /home/ubuntu/demo-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
+
+            echo "📦 檢查 JAR 是否存在"
+            ls -l /home/ubuntu/demo-0.0.1-SNAPSHOT.jar
+
+            echo "🚀 啟動新的 Spring Boot 應用"
+            nohup java -jar /home/ubuntu/demo-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+            echo "✅ 已背景執行"
