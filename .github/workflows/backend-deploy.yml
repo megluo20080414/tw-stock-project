@@ -7,8 +7,6 @@ on:
     paths:
       - "backend/**"
 
-  workflow_dispatch: # ✅ 允許手動觸發
-
 jobs:
   build-and-deploy-backend:
     runs-on: ubuntu-latest
@@ -27,7 +25,7 @@ jobs:
         working-directory: ./backend
         run: ./mvnw clean package -DskipTests
 
-      - name: 🚀 Deploy JAR to EC2
+      - name: 🚀 Upload JAR to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -36,17 +34,17 @@ jobs:
           source: "backend/target/demo-0.0.1-SNAPSHOT.jar"
           target: "/home/ubuntu"
 
-      - name: 🔄 Restart backend on EC2
+      - name: 🔁 Restart backend with systemd
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "✅ 殺掉正在執行的 Spring Boot..."
-            pkill -f 'java -jar' || true
-
-            echo "🚀 啟動 Spring Boot（背景執行）"
-            nohup java -jar /home/ubuntu/demo-0.0.1-SNAPSHOT.jar > /home/ubuntu/app.log 2>&1 & disown
-
-            echo "✅ 部署完成"
+            echo "🛑 Stop service"
+            sudo systemctl stop tw-stock-backend || true
+            echo "🔄 Reload daemon"
+            sudo systemctl daemon-reload
+            echo "🚀 Start service"
+            sudo systemctl start tw-stock-backend
+            echo "✅ Deployment complete!"
